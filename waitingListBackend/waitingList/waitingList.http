@@ -1,0 +1,6 @@
+@waitingList_HostAddress = http://localhost:5239
+
+GET {{waitingList_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
