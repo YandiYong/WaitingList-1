@@ -1,31 +1,27 @@
-import { Component, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
-
-interface Centre {
-  id: number;
-  name: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  allowedRadiusMetres: number;
-}
-
-interface VisitPreview {
-  clientNumber: string;
-  fullName: string;
-  centreName: string;
-  visitDate: Date;
-}
+import {
+  Centre,
+  CreateVisitRequest,
+  Visit,
+} from '../models/visit.models';
+import { VisitApiService } from '../Services/visit-api.service';
+import {
+  formatLocalDate,
+  strictDateProviders,
+} from '../shared/strict-date.adapter';
 
 @Component({
   selector: 'app-main-page',
   imports: [
+    DatePipe,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
@@ -33,47 +29,26 @@ interface VisitPreview {
     MatSelectModule,
     MatDatepickerModule,
   ],
-  providers: [
-    {provide: MAT_DATE_LOCALE, useValue:'en-GB'},
-    provideNativeDateAdapter(),],
+  providers: strictDateProviders,
   templateUrl: './main-page.html',
   styleUrl: './main-page.scss',
 })
-export class MainPage {
+export class MainPage implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
+  private readonly visitApi = inject(VisitApiService);
 
-  readonly centres: Centre[] = [
-    {
-      id: 1,
-      name: 'Mthatha Centre',
-      address: 'Mthatha, Eastern Cape',
-      latitude: -31.5889,
-      longitude: 28.7844,
-      allowedRadiusMetres: 150,
-    },
-    {
-      id: 2,
-      name: 'East London Centre',
-      address: 'East London, Eastern Cape',
-      latitude: -33.0153,
-      longitude: 27.9116,
-      allowedRadiusMetres: 150,
-    },
-    {
-      id: 3,
-      name: 'Queenstown Centre',
-      address: 'Komani, Eastern Cape',
-      latitude: -31.8976,
-      longitude: 26.8753,
-      allowedRadiusMetres: 150,
-    },
-  ];
+  readonly centres = signal<Centre[]>([]);
+  readonly visits = signal<Visit[]>([]);
+  readonly submittedVisit = signal<Visit | null>(null);
+  readonly errorMessage = signal<string | null>(null);
+  readonly isLoading = signal(false);
+  readonly isSubmitting = signal(false);
 
-  readonly minimumVisitDate = new Date().toISOString().slice(0, 10);
-  readonly submittedVisit = signal<VisitPreview | null>(null);
+  // This uses the browser's local date, not UTC.
+  readonly minimumVisitDate = this.startOfLocalToday();
 
   readonly visitForm = this.formBuilder.group({
-    clientNumber: this.formBuilder.nonNullable.control('', [
+    accNumber: this.formBuilder.nonNullable.control('', [
       Validators.required,
       Validators.pattern(/^[A-Za-z0-9-]{4,20}$/),
     ]),
@@ -82,7 +57,7 @@ export class MainPage {
       Validators.minLength(2),
       Validators.maxLength(100),
     ]),
-    phoneNumber: this.formBuilder.nonNullable.control('', [
+    cellNumber: this.formBuilder.nonNullable.control('', [
       Validators.required,
       Validators.pattern(/^(?:\+27|0)[6-8][0-9]{8}$/),
     ]),
@@ -92,33 +67,83 @@ export class MainPage {
 
   get selectedCentre(): Centre | null {
     const centreId = this.visitForm.controls.centreId.value;
-    return this.centres.find((centre) => centre.id === centreId) ?? null;
+    return this.centres().find((centre) => centre.centreId === centreId) ?? null;
+  }
+
+  ngOnInit(): void {
+    this.loadCentres();
+    this.loadVisits();
   }
 
   submit(): void {
     this.submittedVisit.set(null);
+    this.errorMessage.set(null);
 
     if (this.visitForm.invalid) {
       this.visitForm.markAllAsTouched();
       return;
     }
 
-    const formValue = this.visitForm.getRawValue();
-    const centre = this.centres.find((item) => item.id === formValue.centreId);
-
-    if(!centre || !formValue.visitDate){return}
-
-    if (!centre) {
-      this.visitForm.controls.centreId.setErrors({ required: true });
+    const value = this.visitForm.getRawValue();
+    if (value.centreId === null || value.visitDate === null) {
       return;
     }
 
-    this.submittedVisit.set({
-      clientNumber: formValue.clientNumber,
-      fullName: formValue.fullName,
-      centreName: centre.name,
-      visitDate: formValue.visitDate,
+    const request: CreateVisitRequest = {
+      accNumber: value.accNumber.trim(),
+      fullName: value.fullName.trim(),
+      cellNumber: value.cellNumber.trim(),
+      centreId: value.centreId,
+      // The API also enforces this exact format.
+      visitDate: formatLocalDate(value.visitDate),
+    };
+
+    this.isSubmitting.set(true);
+
+    this.visitApi.createVisit(request).subscribe({
+      next: (visit) => {
+        this.submittedVisit.set(visit);
+        this.isSubmitting.set(false);
+        this.loadVisits();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.errorMessage.set(this.getApiError(error));
+        this.isSubmitting.set(false);
+      },
     });
   }
 
+  private loadCentres(): void {
+    this.visitApi.getCentres().subscribe({
+      next: (centres) => this.centres.set(centres),
+      error: (error: HttpErrorResponse) =>
+        this.errorMessage.set(this.getApiError(error)),
+    });
+  }
+
+  private loadVisits(): void {
+    this.isLoading.set(true);
+
+    this.visitApi.getVisits().subscribe({
+      next: (visits) => {
+        this.visits.set(visits);
+        this.isLoading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.errorMessage.set(this.getApiError(error));
+        this.isLoading.set(false);
+      },
+    });
+  }
+
+  private getApiError(error: HttpErrorResponse): string {
+    return error.error?.detail ??
+      error.error?.title ??
+      'The backend could not be reached. Make sure the API is running.';
+  }
+
+  private startOfLocalToday(): Date {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
 }

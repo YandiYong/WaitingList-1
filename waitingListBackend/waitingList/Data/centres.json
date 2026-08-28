@@ -1,0 +1,29 @@
+[
+  {
+    "externalCentreId": "MTH-001",
+    "centreName": "Mthatha Centre",
+    "address": "Mthatha, Eastern Cape",
+    "latitude": -31.588900,
+    "longitude": 28.784400,
+    "allowedRadiusMetres": 150,
+    "isActive": true
+  },
+  {
+    "externalCentreId": "EL-001",
+    "centreName": "East London Centre",
+    "address": "East London, Eastern Cape",
+    "latitude": -33.015300,
+    "longitude": 27.911600,
+    "allowedRadiusMetres": 150,
+    "isActive": true
+  },
+  {
+    "externalCentreId": "KOM-001",
+    "centreName": "Komani Centre",
+    "address": "Komani, Eastern Cape",
+    "latitude": -31.897600,
+    "longitude": 26.875300,
+    "allowedRadiusMetres": 150,
+    "isActive": true
+  }
+]

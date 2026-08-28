@@ -1,24 +1,32 @@
 <main class="min-h-screen bg-slate-50 p-4 text-slate-950 sm:p-6 lg:p-8">
-  <div class="mx-auto min-h-[calc(100vh-2rem)] max-w-4xl overflow-hidden rounded-2xl bg-white shadow-sm sm:min-h-[calc(100vh-3rem)] lg:min-h-[calc(100vh-4rem)]">
-    <section class="flex min-h-[inherit] items-center px-6 py-10 sm:px-10 lg:px-16 lg:py-16">
-      <div class="mx-auto w-full max-w-2xl">
-        <div class="mb-8">
+  <div class="mx-auto max-w-5xl rounded-2xl bg-white shadow-sm">
+    <section class="px-6 py-10 sm:px-10 lg:px-16 lg:py-14">
+      <div class="mx-auto w-full max-w-3xl">
+        <header class="mb-8">
           <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-700">
-            Visit request
+            Appointment request
           </span>
-          <h2 class="mt-4 text-3xl font-semibold tracking-tight text-slate-950">Tell us about your visit</h2>
+          <h1 class="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
+            Enter patient's details
+          </h1>
           <p class="mt-2 text-sm leading-6 text-slate-600">
-            All fields are required. Centre locations are currently sample data and will be supplied by the centre API.
+            Dates use the required dd/MM/yyyy format. Centre data comes from the backend test JSON file.
           </p>
-        </div>
+        </header>
+
+        @if (errorMessage()) {
+          <div class="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+            {{ errorMessage() }}
+          </div>
+        }
 
         <form [formGroup]="visitForm" (ngSubmit)="submit()" class="grid gap-x-5 gap-y-2 sm:grid-cols-2" novalidate>
-          <mat-form-field >
+          <mat-form-field>
             <mat-label>Account number</mat-label>
-            <input matInput formControlName="clientNumber" autocomplete="off" placeholder="e.g. CL-1024" />
+            <input matInput formControlName="accNumber" autocomplete="off" placeholder="e.g. ACC-1024" />
             <mat-hint>4–20 letters, numbers or hyphens</mat-hint>
-            @if (visitForm.controls.clientNumber.touched && visitForm.controls.clientNumber.invalid) {
-              <mat-error>Enter a valid client number.</mat-error>
+            @if (visitForm.controls.accNumber.touched && visitForm.controls.accNumber.invalid) {
+              <mat-error>Enter a valid account number.</mat-error>
             }
           </mat-form-field>
 
@@ -26,34 +34,42 @@
             <mat-label>Full name</mat-label>
             <input matInput formControlName="fullName" autocomplete="name" />
             @if (visitForm.controls.fullName.touched && visitForm.controls.fullName.invalid) {
-              <mat-error>Enter the client's full name.</mat-error>
+              <mat-error>Enter the patient's full name.</mat-error>
             }
           </mat-form-field>
 
-          <mat-form-field >
-            <mat-label>Phone number</mat-label>
-            <input matInput type="tel" formControlName="phoneNumber" autocomplete="tel" placeholder="0821234567" />
-            @if (visitForm.controls.phoneNumber.touched && visitForm.controls.phoneNumber.invalid) {
-              <mat-error>Enter a valid South African phone number.</mat-error>
+          <mat-form-field>
+            <mat-label>Cell number</mat-label>
+            <input matInput type="tel" formControlName="cellNumber" autocomplete="tel" placeholder="0821234567" />
+            @if (visitForm.controls.cellNumber.touched && visitForm.controls.cellNumber.invalid) {
+              <mat-error>Enter a valid South African cell number.</mat-error>
             }
           </mat-form-field>
 
-          <mat-form-field >
+          <mat-form-field>
             <mat-label>Visit date</mat-label>
-            <input matInput formControlName="visitDate" [matDatepicker]="picker" />
-             <mat-hint>dd/MM/yyyy</mat-hint>
-             <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-             <mat-datepicker #picker></mat-datepicker>
+            <input
+              matInput
+              formControlName="visitDate"
+              [matDatepicker]="picker"
+              [min]="minimumVisitDate"
+              placeholder="dd/MM/yyyy"
+            />
+            <mat-hint>dd/MM/yyyy</mat-hint>
+            <mat-datepicker-toggle matIconSuffix [for]="picker" />
+            <mat-datepicker #picker />
             @if (visitForm.controls.visitDate.touched && visitForm.controls.visitDate.invalid) {
-              <mat-error>Select a visit date.</mat-error>
+              <mat-error>Enter a valid date as dd/MM/yyyy.</mat-error>
             }
           </mat-form-field>
 
-          <mat-form-field  class="sm:col-span-2">
+          <mat-form-field class="sm:col-span-2">
             <mat-label>Unit centre</mat-label>
             <mat-select formControlName="centreId">
-              @for (centre of centres; track centre.id) {
-                <mat-option [value]="centre.id">{{ centre.name }} — {{ centre.address }}</mat-option>
+              @for (centre of centres(); track centre.centreId) {
+                <mat-option [value]="centre.centreId">
+                  {{ centre.centreName }} — {{ centre.address }}
+                </mat-option>
               }
             </mat-select>
             @if (visitForm.controls.centreId.touched && visitForm.controls.centreId.invalid) {
@@ -66,7 +82,7 @@
               <div class="flex items-start gap-3">
                 <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700" aria-hidden="true">⌖</span>
                 <div class="min-w-0">
-                  <p class="font-semibold text-slate-900">{{ centre.name }}</p>
+                  <p class="font-semibold text-slate-900">{{ centre.centreName }}</p>
                   <p class="mt-0.5 text-sm text-slate-600">{{ centre.address }}</p>
                   <p class="mt-2 font-mono text-xs text-slate-500">
                     {{ centre.latitude }}, {{ centre.longitude }} · {{ centre.allowedRadiusMetres }} m check-in radius
@@ -76,9 +92,10 @@
             </aside>
           }
 
-          <div class="mt-3 flex flex-col-reverse items-stretch gap-3 sm:col-span-2 sm:flex-row sm:items-center sm:justify-between">
-
-            <button mat-flat-button type="submit" class="submit-button sm:min-w-44">Review visit</button>
+          <div class="mt-3 flex justify-end sm:col-span-2">
+            <button mat-flat-button type="submit" class="submit-button sm:min-w-48" [disabled]="isSubmitting()">
+              {{ isSubmitting() ? 'Saving…' : 'Create appointment' }}
+            </button>
           </div>
         </form>
 
@@ -87,15 +104,67 @@
             <div class="flex items-start gap-3">
               <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-700" aria-hidden="true">✓</span>
               <div>
-                <h3 class="font-semibold text-emerald-950">Visit details are ready</h3>
+                <h2 class="font-semibold text-emerald-950">Appointment saved</h2>
                 <p class="mt-1 text-sm leading-6 text-emerald-800">
-                  {{ visit.fullName }} ({{ visit.clientNumber }}) selected {{ visit.centreName }} for {{ visit.visitDate }}.
-                  Connect the API next to save this visit and issue its QR code.
+                  {{ visit.fullName }} ({{ visit.accNumber }}) is booked at {{ visit.centreName }} for {{ visit.visitDate }}.
                 </p>
               </div>
             </div>
           </section>
         }
+
+        <section class="mt-12 border-t border-slate-200 pt-8" aria-labelledby="visits-heading">
+          <div class="mb-5 flex items-center justify-between gap-4">
+            <div>
+              <h2 id="visits-heading" class="text-xl font-semibold text-slate-950">Saved appointments</h2>
+              <p class="mt-1 text-sm text-slate-600">Private test view of visits stored in LocalDB.</p>
+            </div>
+            <span class="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
+              {{ visits().length }} total
+            </span>
+          </div>
+
+          @if (isLoading()) {
+            <p class="py-8 text-center text-sm text-slate-500">Loading appointments…</p>
+          } @else if (visits().length === 0) {
+            <p class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+              No appointments have been saved yet.
+            </p>
+          } @else {
+            <div class="overflow-x-auto rounded-xl border border-slate-200">
+              <table class="w-full min-w-[760px] border-collapse text-left text-sm">
+                <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
+                  <tr>
+                    <th class="px-4 py-3 font-semibold">Account</th>
+                    <th class="px-4 py-3 font-semibold">Patient</th>
+                    <th class="px-4 py-3 font-semibold">Cell</th>
+                    <th class="px-4 py-3 font-semibold">Centre</th>
+                    <th class="px-4 py-3 font-semibold">Visit date</th>
+                    <th class="px-4 py-3 font-semibold">Created locally</th>
+                    <th class="px-4 py-3 font-semibold">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                  @for (visit of visits(); track visit.visitId) {
+                    <tr class="text-slate-700">
+                      <td class="whitespace-nowrap px-4 py-3 font-medium text-slate-900">{{ visit.accNumber }}</td>
+                      <td class="px-4 py-3">{{ visit.fullName }}</td>
+                      <td class="whitespace-nowrap px-4 py-3">{{ visit.cellNumber }}</td>
+                      <td class="px-4 py-3">{{ visit.centreName }}</td>
+                      <td class="whitespace-nowrap px-4 py-3">{{ visit.visitDate }}</td>
+                      <td class="whitespace-nowrap px-4 py-3">{{ visit.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+                      <td class="px-4 py-3">
+                        <span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                          {{ visit.status }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
       </div>
     </section>
   </div>
