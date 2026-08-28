@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -22,7 +21,6 @@ import {
 @Component({
   selector: 'app-main-page',
   imports: [
-    DatePipe,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,

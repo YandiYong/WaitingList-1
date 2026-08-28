@@ -25,5 +25,7 @@ namespace waitingList.Models
 
         // The QR timestamp uses the computer's local clock.
         public DateTimeOffset qrGeneratedAt { get; set; }
+
+        public QueueEntry? queueEntry { get; set; }
     }
 }

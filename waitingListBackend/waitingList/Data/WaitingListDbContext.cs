@@ -9,6 +9,7 @@ namespace waitingList.Data
         public DbSet<Client> clients => Set<Client>();
         public DbSet<UnitCentre> unitCentres => Set<UnitCentre>();
         public DbSet<Visit> visits => Set<Visit>();
+        public DbSet<QueueEntry> queueEntries => Set<QueueEntry>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -98,6 +99,35 @@ namespace waitingList.Data
                 entity.HasOne(visit => visit.centre)
                     .WithMany(centre => centre.visits)
                     .HasForeignKey(visit => visit.centreId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<QueueEntry>(entity =>
+            {
+                entity.HasKey(queue => queue.queueEntryId);
+
+                entity.HasIndex(queue => queue.visitId)
+                    .IsUnique();
+
+                entity.HasIndex(queue => new
+                {
+                    queue.centreId,
+                    queue.queueDate,
+                    queue.queueNumber
+                }).IsUnique();
+
+                entity.Property(queue => queue.status)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+
+                entity.HasOne(queue => queue.visit)
+                    .WithOne(visit => visit.queueEntry)
+                    .HasForeignKey<QueueEntry>(queue => queue.visitId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(queue => queue.centre)
+                    .WithMany(centre => centre.queueEntries)
+                    .HasForeignKey(queue => queue.centreId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
         }

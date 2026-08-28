@@ -25,5 +25,14 @@
     "longitude": 26.875300,
     "allowedRadiusMetres": 150,
     "isActive": true
+  },
+  {
+    "externalCentreId": "SAND-001",
+    "centreName": "Head office Centre",
+    "address": "24 Fricker Road",
+    "latitude": -26.130800,
+    "longitude": 28.047600,
+    "allowedRadiusMetres": 150,
+    "isActive": true
   }
 ]

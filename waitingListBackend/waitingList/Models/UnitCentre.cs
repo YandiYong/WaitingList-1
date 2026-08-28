@@ -15,5 +15,6 @@ namespace waitingList.Models
         public DateTimeOffset? lastSyncedAt { get; set; }
 
         public ICollection<Visit> visits { get; set; } = [];
+        public ICollection<QueueEntry> queueEntries { get; set; } = [];
     }
 }

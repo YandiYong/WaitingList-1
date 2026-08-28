@@ -26,6 +26,7 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<CentreDataSeeder>();
 builder.Services.AddScoped<ICentreService, CentreService>();
 builder.Services.AddScoped<IVisitService, VisitService>();
+builder.Services.AddScoped<ICheckInService, CheckInService>();
 
 builder.Services.AddCors(options =>
 {

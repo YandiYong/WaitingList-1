@@ -6,13 +6,15 @@ import {
   CreateVisitRequest,
   Visit,
 } from '../models/visit.models';
+import { CheckInRequest, CheckInResult } from '../models/check-in.models';
 
 @Injectable({ providedIn: 'root' })
 export class VisitApiService {
   private readonly http = inject(HttpClient);
 
   // Keep the backend address in one place while the app is in development.
-  private readonly apiUrl = 'http://localhost:5239/api';
+  // private readonly apiUrl = 'http://localhost:5239/api';
+  private readonly apiUrl = '/api';
 
   getCentres(): Observable<Centre[]> {
     return this.http.get<Centre[]>(`${this.apiUrl}/centres`);
@@ -24,5 +26,15 @@ export class VisitApiService {
 
   createVisit(request: CreateVisitRequest): Observable<Visit> {
     return this.http.post<Visit>(`${this.apiUrl}/visits`, request);
+  }
+
+  getCheckInResult(qrToken: string): Observable<CheckInResult> {
+    return this.http.get<CheckInResult>(
+      `${this.apiUrl}/check-ins/${encodeURIComponent(qrToken)}`,
+    );
+  }
+
+  checkIn(request: CheckInRequest): Observable<CheckInResult> {
+    return this.http.post<CheckInResult>(`${this.apiUrl}/check-ins`, request);
   }
 }

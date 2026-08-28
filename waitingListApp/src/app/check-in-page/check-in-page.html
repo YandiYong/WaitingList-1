@@ -1,0 +1,86 @@
+<main class="flex min-h-screen items-center justify-center bg-slate-100 p-4 text-slate-950 sm:p-6">
+  <section class="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-xl" aria-live="polite">
+    <header class="bg-blue-700 px-6 py-7 text-white sm:px-8">
+      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100">QR queue</p>
+      <h1 class="mt-2 text-2xl font-semibold">Appointment check-in</h1>
+    </header>
+
+    <div class="p-6 sm:p-8">
+      @if (isLoading()) {
+        <div class="py-12 text-center">
+          <div class="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-blue-100 border-t-blue-700" aria-hidden="true"></div>
+          <p class="mt-4 text-sm text-slate-600">Checking your QR code…</p>
+        </div>
+      } @else if (errorMessage(); as error) {
+        <div class="text-center">
+          <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-2xl font-bold text-red-700" aria-hidden="true">×</span>
+          <h2 class="mt-4 text-xl font-semibold text-red-900">Check-in unsuccessful</h2>
+          <p class="mt-2 leading-6 text-slate-600">{{ error }}</p>
+
+          <div class="mt-7 flex flex-col gap-3">
+            @if (result() && !result()?.queueNumber) {
+              <button mat-flat-button type="button" (click)="checkIn()" [disabled]="isCheckingIn()">
+                Try location again
+              </button>
+            } @else if (qrToken) {
+              <button mat-flat-button type="button" (click)="validateScan()">Scan again</button>
+            }
+            <a mat-button routerLink="/">Return to appointments</a>
+          </div>
+        </div>
+      } @else if (result(); as checkInResult) {
+        @if (checkInResult.queueNumber) {
+          <div class="text-center">
+            <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700" aria-hidden="true">✓</span>
+            <h2 class="mt-4 text-xl font-semibold text-emerald-950">Check-in successful</h2>
+            <p class="mt-2 text-sm text-emerald-800">{{ checkInResult.message }}</p>
+
+            <div class="mt-7 rounded-2xl bg-slate-950 px-5 py-7 text-white">
+              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-300">Your queue number</p>
+              <p class="queue-number mt-2 text-6xl font-bold tracking-tight">{{ checkInResult.queueNumber }}</p>
+            </div>
+
+            <div class="mt-5 grid grid-cols-2 gap-3 text-left">
+              <div class="rounded-xl bg-blue-50 p-4">
+                <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Status</p>
+                <p class="mt-1 text-lg font-bold text-blue-950">{{ checkInResult.queueStatus }}</p>
+              </div>
+              <div class="rounded-xl bg-amber-50 p-4">
+                <p class="text-xs font-semibold uppercase tracking-wide text-amber-700">People ahead</p>
+                <p class="mt-1 text-lg font-bold text-amber-950">{{ checkInResult.peopleAhead }}</p>
+              </div>
+            </div>
+
+            <div class="mt-5 rounded-xl border border-slate-200 p-4 text-left text-sm text-slate-600">
+              <p><span class="font-semibold text-slate-900">Centre:</span> {{ checkInResult.centreName }}</p>
+              <p class="mt-1"><span class="font-semibold text-slate-900">Visit date:</span> {{ checkInResult.visitDate }}</p>
+              @if (checkInResult.joinedAt) {
+                <p class="mt-1"><span class="font-semibold text-slate-900">Joined:</span> {{ checkInResult.joinedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+              }
+            </div>
+
+            <p class="mt-5 text-sm leading-6 text-slate-600">
+              Please remain near the centre and wait for your number.
+            </p>
+          </div>
+        } @else {
+          <div class="text-center">
+            <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700" aria-hidden="true">✓</span>
+            <h2 class="mt-4 text-xl font-semibold text-emerald-950">QR code scanned successfully</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-600">
+              Your appointment at {{ checkInResult.centreName }} for {{ checkInResult.visitDate }} was found.
+            </p>
+
+            <div class="mt-6 rounded-xl border border-blue-200 bg-blue-50 p-4 text-left text-sm leading-6 text-blue-900">
+              Location permission is required to confirm that you are at the selected centre.
+            </div>
+
+            <button mat-flat-button type="button" class="mt-6 w-full" (click)="checkIn()" [disabled]="isCheckingIn()">
+              {{ isCheckingIn() ? 'Checking location…' : 'Check in now' }}
+            </button>
+          </div>
+        }
+      }
+    </div>
+  </section>
+</main>
