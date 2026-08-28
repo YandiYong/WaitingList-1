@@ -83,6 +83,13 @@ namespace waitingList.Data
                     .HasConversion<string>()
                     .HasMaxLength(20);
 
+                entity.HasIndex(visit => visit.qrToken)
+                    .IsUnique();
+
+                entity.Property(visit => visit.qrToken)
+                    .HasMaxLength(100)
+                    .IsRequired();
+
                 entity.HasOne(visit => visit.client)
                     .WithMany(client => client.visits)
                     .HasForeignKey(visit => visit.clientId)

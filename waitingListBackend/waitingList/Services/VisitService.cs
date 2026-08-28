@@ -24,7 +24,9 @@ namespace waitingList.Services
                     visit.centre.centreName,
                     visit.visitDate,
                     visit.status.ToString(),
-                    visit.createdAt))
+                    visit.createdAt,
+                    visit.qrToken,
+                    visit.qrGeneratedAt))
                 .ToListAsync(cancellationToken);
         }
 
@@ -86,7 +88,11 @@ namespace waitingList.Services
                 centre = centre,
                 centreId = centre.centreId,
                 visitDate = request.visitDate,
-                createdAt = localNow
+                createdAt = localNow,
+
+                // The QR token contains no personal information.
+                qrToken = Guid.NewGuid().ToString("N"),
+                qrGeneratedAt = localNow
             };
 
             dbContext.visits.Add(visit);
@@ -101,7 +107,9 @@ namespace waitingList.Services
                 centre.centreName,
                 visit.visitDate,
                 visit.status.ToString(),
-                visit.createdAt);
+                visit.createdAt,
+                visit.qrToken,
+                visit.qrGeneratedAt);
         }
     }
 }

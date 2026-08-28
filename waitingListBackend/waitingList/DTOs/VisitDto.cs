@@ -9,5 +9,7 @@ namespace waitingList.DTOs
         string centreName,
         DateOnly visitDate,
         string status,
-        DateTimeOffset createdAt);
+        DateTimeOffset createdAt,
+        string qrToken,
+        DateTimeOffset qrGeneratedAt);
 }

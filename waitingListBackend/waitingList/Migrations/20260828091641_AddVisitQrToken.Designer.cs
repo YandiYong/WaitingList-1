@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using waitingList.Data;
 
@@ -11,9 +12,11 @@ using waitingList.Data;
 namespace waitingList.Migrations
 {
     [DbContext(typeof(WaitingListDbContext))]
-    partial class WaitingListDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260828091641_AddVisitQrToken")]
+    partial class AddVisitQrToken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -133,14 +136,6 @@ namespace waitingList.Migrations
                     b.Property<DateTimeOffset>("createdAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset>("qrGeneratedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("qrToken")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("status")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -152,9 +147,6 @@ namespace waitingList.Migrations
                     b.HasKey("visitId");
 
                     b.HasIndex("centreId");
-
-                    b.HasIndex("qrToken")
-                        .IsUnique();
 
                     b.HasIndex("clientId", "centreId", "visitDate")
                         .IsUnique();

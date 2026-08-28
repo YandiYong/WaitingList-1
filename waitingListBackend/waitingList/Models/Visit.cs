@@ -19,5 +19,11 @@ namespace waitingList.Models
         public DateTimeOffset createdAt { get; set; }
         public DateTimeOffset? checkedInAt { get; set; }
         public DateTimeOffset? cancelledAt { get; set; }
+
+        // This unique token links the saved appointment to its QR code.
+        public required string qrToken { get; set; }
+
+        // The QR timestamp uses the computer's local clock.
+        public DateTimeOffset qrGeneratedAt { get; set; }
     }
 }

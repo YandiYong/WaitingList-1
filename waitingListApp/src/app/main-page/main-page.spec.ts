@@ -29,6 +29,8 @@ describe('MainPage', () => {
     visitDate: '28/08/2026',
     status: 'Scheduled',
     createdAt: '2026-08-28T09:00:00+02:00',
+    qrToken: 'a29b37c074724bf68175066fd6cd38a1',
+    qrGeneratedAt: '2026-08-28T09:00:00+02:00',
   };
 
   beforeEach(async () => {
@@ -62,7 +64,7 @@ describe('MainPage', () => {
     expect(visitApi.createVisit).not.toHaveBeenCalled();
   });
 
-  it('should send the visit date as dd/MM/yyyy', () => {
+  it('should save the visit and display its QR code', async () => {
     component.visitForm.setValue({
       accNumber: 'ACC-1024',
       fullName: 'Nandi Dlamini',
@@ -81,5 +83,10 @@ describe('MainPage', () => {
       visitDate: '28/08/2026',
     });
     expect(component.submittedVisit()).toEqual(savedVisit);
+    expect(component.getQrValue(savedVisit)).toContain(savedVisit.qrToken);
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('qrcode')).not.toBeNull();
   });
 });

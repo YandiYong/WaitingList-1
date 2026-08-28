@@ -9,9 +9,6 @@
           <h1 class="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
             Enter patient's details
           </h1>
-          <p class="mt-2 text-sm leading-6 text-slate-600">
-            Dates use the required dd/MM/yyyy format. Centre data comes from the backend test JSON file.
-          </p>
         </header>
 
         @if (errorMessage()) {
@@ -103,17 +100,33 @@
           <section class="success-card mt-7" aria-live="polite">
             <div class="flex items-start gap-3">
               <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-700" aria-hidden="true">✓</span>
-              <div>
+              <div class="min-w-0 flex-1">
                 <h2 class="font-semibold text-emerald-950">Appointment saved</h2>
                 <p class="mt-1 text-sm leading-6 text-emerald-800">
                   {{ visit.fullName }} ({{ visit.accNumber }}) is booked at {{ visit.centreName }} for {{ visit.visitDate }}.
                 </p>
               </div>
             </div>
+
+            <!-- Keep the QR card outside the indented message row so it uses the full width. -->
+            <div class="mt-5 flex w-full flex-col items-center rounded-xl bg-white p-5 text-center shadow-sm">
+              <qrcode
+                [qrdata]="getQrValue(visit)"
+                [width]="220"
+                [errorCorrectionLevel]="'M'"
+                aria-label="QR code for this appointment"
+              />
+              <p class="mt-1 text-sm text-slate-600">
+                Scan QR code when you arrive at the centre.
+              </p>
+              <!-- <p class="mt-2 text-xs text-slate-500">
+                Generated locally: {{ visit.qrGeneratedAt | date: 'dd/MM/yyyy HH:mm' }}
+              </p> -->
+            </div>
           </section>
         }
 
-        <section class="mt-12 border-t border-slate-200 pt-8" aria-labelledby="visits-heading">
+        <!-- <section class="mt-12 border-t border-slate-200 pt-8" aria-labelledby="visits-heading">
           <div class="mb-5 flex items-center justify-between gap-4">
             <div>
               <h2 id="visits-heading" class="text-xl font-semibold text-slate-950">Saved appointments</h2>
@@ -164,7 +177,7 @@
               </table>
             </div>
           }
-        </section>
+        </section> -->
       </div>
     </section>
   </div>

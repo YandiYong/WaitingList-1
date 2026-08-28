@@ -26,4 +26,6 @@ export interface Visit {
   visitDate: string;
   status: string;
   createdAt: string;
+  qrToken: string;
+  qrGeneratedAt: string;
 }

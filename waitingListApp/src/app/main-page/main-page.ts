@@ -7,6 +7,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { QRCodeComponent } from 'angularx-qrcode';
 import {
   Centre,
   CreateVisitRequest,
@@ -28,6 +29,7 @@ import {
     MatInputModule,
     MatSelectModule,
     MatDatepickerModule,
+    QRCodeComponent,
   ],
   providers: strictDateProviders,
   templateUrl: './main-page.html',
@@ -111,6 +113,11 @@ export class MainPage implements OnInit {
         this.isSubmitting.set(false);
       },
     });
+  }
+
+  getQrValue(visit: Visit): string {
+    // The QR contains only a secure token URL, never the patient's details.
+    return `${window.location.origin}/check-in?token=${encodeURIComponent(visit.qrToken)}`;
   }
 
   private loadCentres(): void {
